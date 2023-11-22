@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -30,10 +31,14 @@ type Track struct {
 func main() {
 
 	defer errorHandler()
+	//TODO: Переделать обработку ошибок
+	userHomeDir, err := os.UserHomeDir()
+	checkError(err)
+	dbFile, err := getPath("musicdb_*.sqlite")
+	checkError(err)
+	yMusicDirPath, err := getPath("Music/*")
+	checkError(err)
 
-	userHomeDir, _ := os.UserHomeDir()
-	dbFile := getPath("musicdb_*.sqlite")
-	yMusicDirPath := getPath("Music/*")
 	musicDirPath := filepath.Join(userHomeDir, "Music", "YandexMusicGrabber")
 
 	db, err := sql.Open("sqlite", dbFile)
@@ -122,7 +127,7 @@ func copyMusicFile(src, dst string) error {
 	return nil
 }
 
-func getPath(pattern string) string {
+func getPath(pattern string) (string, error) {
 	cacheDir, err := os.UserCacheDir()
 	checkError(err)
 
@@ -130,7 +135,12 @@ func getPath(pattern string) string {
 	matches, err := filepath.Glob(pattern)
 	checkError(err)
 
-	return matches[0]
+	if len(matches) > 0 {
+		return matches[0], nil
+	}
+	err = errors.New("возможно у Вас не установлено приложение Яндекс.Музыка или вы забыли в нём авторизоваться")
+
+	return "", err
 }
 
 func getRunningMode() (result int, err error) {
