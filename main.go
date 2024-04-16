@@ -86,7 +86,7 @@ func main() {
 	bar.Finish()
 
 	fmt.Println("Песен скопированно", len(tracks))
-	time.Sleep(time.Millisecond * 3000)
+	time.Sleep(time.Second * 3)
 	exec.Command("explorer", musicDirPath).Start()
 }
 
